@@ -5,6 +5,9 @@ inspired by OpenWrt's `luci-app-package-manager`.
 
 Debian package name: `openmediavault-pluginmgr`
 
+Versioning: the plugin's major version follows the OpenMediaVault major
+version (OMV 8.x → plugin `8.x.y`).
+
 ## Features
 
 Single page with four tabs:
@@ -39,7 +42,7 @@ Safety:
 2. Install it via CLI on the NAS (first install must use the CLI):
 
    ```bash
-   apt install ./openmediavault-pluginmgr_1.0.0_all.deb
+   apt install ./openmediavault-pluginmgr_8.0.1_all.deb
    ```
 
 3. Open the web interface: **System → Package Manager**.
