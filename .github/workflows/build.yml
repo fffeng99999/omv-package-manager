@@ -77,13 +77,13 @@ jobs:
       - name: Build package
         run: |
           dpkg-buildpackage -us -uc -b
-          mkdir -p "${{ runner.temp }}/out"
-          cp ../*.deb ../*.changes "${{ runner.temp }}/out/" || true
-          ls -l "${{ runner.temp }}/out"
+          mkdir -p "${{ github.workspace }}/dist"
+          mv ../*.deb ../*.changes "${{ github.workspace }}/dist/"
+          ls -l "${{ github.workspace }}/dist"
 
       - name: Inspect package
         run: |
-          DEB=$(ls "${{ runner.temp }}/out"/*.deb)
+          DEB=$(ls "${{ github.workspace }}/dist"/*.deb)
           echo "== control =="; dpkg-deb -f "$DEB"
           echo "== contents =="; dpkg-deb -c "$DEB"
 
@@ -92,11 +92,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openmediavault-pluginmgr-deb
-          path: ${{ runner.temp }}/out/*.deb
+          path: dist/*.deb
 
       - name: Create release and upload .deb (tag builds)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ runner.temp }}/out/*.deb
+          files: dist/*.deb
           generate_release_notes: true

@@ -5,6 +5,7 @@
 *.changes
 *.debhelper
 *.substvars
+dist/
 
 # dpkg-buildpackage working directories
 debian/openmediavault-pluginmgr/
