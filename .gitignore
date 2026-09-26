@@ -1,0 +1,20 @@
+# Build artifacts
+*.deb
+*.build
+*.buildinfo
+*.changes
+*.debhelper
+*.substvars
+
+# dpkg-buildpackage working directories
+debian/openmediavault-pluginmgr/
+debian/.debhelper/
+debian/tmp/
+debian/files
+debian/*.log
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

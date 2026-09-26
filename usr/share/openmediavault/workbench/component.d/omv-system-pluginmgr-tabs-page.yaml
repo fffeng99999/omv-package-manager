@@ -1,0 +1,263 @@
+version: "1.0"
+type: component
+data:
+  name: omv-system-pluginmgr-tabs-page
+  type: tabsPage
+  config:
+    tabs:
+      # -------------------------------------------------------------------
+      # Installed packages
+      # -------------------------------------------------------------------
+      - type: datatable
+        label: _("Installed")
+        config:
+          hints:
+            - type: warning
+              text: _("Package operations may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing. Packages starting with 'openmediavault' are protected against removal.")
+          autoReload: false
+          hasSearchField: true
+          remoteSorting: true
+          remotePaging: true
+          stateId: 5f0a1c72-2a43-11ef-96f4-9f01516c7ae3
+          rowId: package
+          selectionType: single
+          sorters:
+            - dir: asc
+              prop: package
+          store:
+            proxy:
+              service: PkgMgr
+              get:
+                method: getInstalledListBg
+                task: true
+          columns:
+            - name: _("Package")
+              prop: package
+              flexGrow: 2
+              sortable: true
+            - name: _("Version")
+              prop: version
+              flexGrow: 1
+              sortable: true
+            - name: _("Architecture")
+              prop: architecture
+              flexGrow: 1
+              sortable: true
+            - name: _("Size")
+              prop: size
+              flexGrow: 1
+              sortable: true
+              cellTemplateName: binaryUnit
+            - name: _("Description")
+              prop: description
+              flexGrow: 3
+              sortable: true
+          actions:
+            - type: iconButton
+              icon: mdi:delete-alert
+              tooltip: _("Remove")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to remove the selected package? Removing packages may break your system. Packages starting with 'openmediavault' will be refused.")
+              execute:
+                type: request
+                request:
+                  service: PkgMgr
+                  method: removePkg
+                  params:
+                    packages:
+                      - "{{ package }}"
+                    force: false
+                  task: true
+                  progressMessage: _("Removing the selected package ...")
+      # -------------------------------------------------------------------
+      # Available packages
+      # -------------------------------------------------------------------
+      - type: datatable
+        label: _("Available")
+        config:
+          hints:
+            - type: warning
+              text: _("Installing packages may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing.")
+          autoReload: false
+          hasSearchField: true
+          remoteSorting: true
+          remotePaging: true
+          stateId: 6a1b2d83-2a43-11ef-96f4-9f01516c7ae3
+          rowId: package
+          selectionType: single
+          sorters:
+            - dir: asc
+              prop: package
+          store:
+            proxy:
+              service: PkgMgr
+              get:
+                method: getAvailableListBg
+                task: true
+          columns:
+            - name: _("Package")
+              prop: package
+              flexGrow: 2
+              sortable: true
+            - name: _("Version")
+              prop: version
+              flexGrow: 1
+              sortable: true
+            - name: _("Architecture")
+              prop: architecture
+              flexGrow: 1
+              sortable: true
+            - name: _("Description")
+              prop: description
+              flexGrow: 3
+              sortable: true
+          actions:
+            - type: iconButton
+              icon: download
+              tooltip: _("Install")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to install the selected package?")
+              execute:
+                type: request
+                request:
+                  service: PkgMgr
+                  method: installPkg
+                  params:
+                    packages:
+                      - "{{ package }}"
+                  task: true
+                  progressMessage: _("Installing the selected package ...")
+      # -------------------------------------------------------------------
+      # Upgradable packages
+      # -------------------------------------------------------------------
+      - type: datatable
+        label: _("Updates")
+        config:
+          hints:
+            - type: warning
+              text: _("Upgrading packages may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing.")
+          autoReload: false
+          hasSearchField: true
+          remoteSorting: true
+          remotePaging: true
+          stateId: 7b2c3e94-2a43-11ef-96f4-9f01516c7ae3
+          rowId: package
+          selectionType: single
+          sorters:
+            - dir: asc
+              prop: package
+          store:
+            proxy:
+              service: PkgMgr
+              get:
+                method: getUpgradableListBg
+                task: true
+          columns:
+            - name: _("Package")
+              prop: package
+              flexGrow: 2
+              sortable: true
+            - name: _("Current")
+              prop: current
+              flexGrow: 1
+              sortable: true
+            - name: _("New")
+              prop: new
+              flexGrow: 1
+              sortable: true
+            - name: _("Architecture")
+              prop: architecture
+              flexGrow: 1
+              sortable: true
+          actions:
+            - type: iconButton
+              icon: mdi:package-up
+              tooltip: _("Update lists")
+              execute:
+                type: request
+                request:
+                  service: PkgMgr
+                  method: updateLists
+                  task: true
+                  progressMessage: _("The package index files are downloaded and updated ...")
+            - type: iconButton
+              icon: upload
+              tooltip: _("Upgrade")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to upgrade the selected package?")
+              execute:
+                type: request
+                request:
+                  service: PkgMgr
+                  method: installPkg
+                  params:
+                    packages:
+                      - "{{ package }}"
+                  task: true
+                  progressMessage: _("Upgrading the selected package ...")
+      # -------------------------------------------------------------------
+      # Local .deb installation
+      # -------------------------------------------------------------------
+      - type: form
+        label: _("Local deb")
+        config:
+          hints:
+            - type: warning
+              text: _("Installing packages may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing.")
+          request:
+            service: PkgMgr
+            post:
+              method: installDeb
+              task: true
+          fields:
+            - type: paragraph
+              title: _("Select the shared folder and the .deb file to install. Upload the .deb file to a shared folder first (e.g. via File Browser or SMB).")
+            - type: sharedFolderSelect
+              name: sharedfolderref
+              label: _("Shared folder")
+              hint: _("The shared folder that contains the .deb file.")
+              value: ""
+            - type: folderBrowser
+              name: debpath
+              label: _("Folder")
+              hint: _("The directory below the shared folder root that contains the .deb file.")
+              value: ""
+              dirType: sharedfolder
+              dirRefIdField: sharedfolderref
+            - type: textInput
+              name: filename
+              label: _("Filename")
+              hint: _("The name of the .deb file, e.g. 'openmediavault-example_1.0_all.deb'.")
+              value: ""
+              validators:
+                required: true
+          buttons:
+            - type: button
+              text: _("Show package info")
+              execute:
+                type: request
+                request:
+                  service: PkgMgr
+                  method: getDebInfo
+                  params:
+                    sharedfolderref: "{{ sharedfolderref }}"
+                    debpath: "{{ debpath }}"
+                    filename: "{{ filename }}"
+                  successNotification: _("Package {{ _response['package'] }} version {{ _response['version'] }} architecture {{ _response['architecture'] }}")
+            - template: submit
+              text: _("Install")
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to install this local .deb package? Installing packages may break your system.")

@@ -1,0 +1,102 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  lint:
+    name: Lint (PHP + YAML)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Lint PHP RPC files
+        run: |
+          for f in $(find usr/share/openmediavault/engined -name '*.inc'); do
+            php -l "$f"
+          done
+
+      - name: Validate JSON datamodels
+        run: |
+          for f in $(find usr/share/openmediavault/datamodels -name '*.json'); do
+            php -r 'json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR); echo "OK: ".$argv[1]."\n";' "$f"
+          done
+
+      - name: Set up Python (yamllint)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Lint workbench YAML
+        run: |
+          pip install yamllint
+          yamllint -d "{extends: relaxed, rules: {line-length: disable}}" \
+            usr/share/openmediavault/workbench
+
+  build:
+    name: Build .deb
+    needs: lint
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            dpkg-dev debhelper build-essential fakeroot ca-certificates git
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify changelog matches tag version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          VER=$(dpkg-parsechangelog -S Version | sed 's/-[0-9]*$//')
+          echo "tag=$TAG changelog=$VER"
+          if [ "$TAG" != "$VER" ]; then
+            echo "ERROR: tag version ($TAG) != changelog version ($VER)"
+            exit 1
+          fi
+
+      - name: Build package
+        run: |
+          dpkg-buildpackage -us -uc -b
+          mkdir -p "${{ runner.temp }}/out"
+          cp ../*.deb ../*.changes "${{ runner.temp }}/out/" || true
+          ls -l "${{ runner.temp }}/out"
+
+      - name: Inspect package
+        run: |
+          DEB=$(ls "${{ runner.temp }}/out"/*.deb)
+          echo "== control =="; dpkg-deb -f "$DEB"
+          echo "== contents =="; dpkg-deb -c "$DEB"
+
+      - name: Upload artifact (branch/PR builds)
+        if: "!startsWith(github.ref, 'refs/tags/v')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: openmediavault-pluginmgr-deb
+          path: ${{ runner.temp }}/out/*.deb
+
+      - name: Create release and upload .deb (tag builds)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ runner.temp }}/out/*.deb
+          generate_release_notes: true

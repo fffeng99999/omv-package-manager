@@ -1,0 +1,16 @@
+Source: openmediavault-pluginmgr
+Section: admin
+XB-Plugin-Section: utilities
+Priority: optional
+Maintainer: fffeng99999 <zhenglinfeng158@gmail.com>
+Build-Depends: debhelper (>= 12)
+Standards-Version: 3.9.6
+Homepage: https://github.com/fffeng99999/omv-package-manager
+
+Package: openmediavault-pluginmgr
+Architecture: all
+Depends: openmediavault (>= 8.0)
+Priority: optional
+Description: openmediavault package manager plugin
+ Browse, install and remove Debian packages from the OpenMediaVault
+ web interface, including local .deb files stored in a shared folder.

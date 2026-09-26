@@ -1,0 +1,6 @@
+version: "1.0"
+type: route
+data:
+  url: "/system/pluginmgr"
+  title: _("Package Manager")
+  component: omv-system-pluginmgr-tabs-page

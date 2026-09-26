@@ -1,0 +1,8 @@
+openmediavault-pluginmgr (1.0.0) stable; urgency=medium
+
+  * Initial release: package manager plugin (installed/available/
+    upgradable lists, install/remove via background tasks, local
+    .deb installation from a shared folder, openmediavault*
+    removal protection).
+
+ -- fffeng99999 <zhenglinfeng158@gmail.com>  Sun, 27 Sep 2026 04:00:00 +0800

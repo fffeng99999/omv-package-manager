@@ -1,0 +1,11 @@
+version: "1.0"
+type: navigation-item
+data:
+  path: "system.pluginmgr"
+  position: 75
+  text: _("Package Manager")
+  icon: "mdi:package-variant-closed"
+  url: "/system/pluginmgr"
+  permissions:
+    role:
+    - admin

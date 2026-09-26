@@ -1,0 +1,25 @@
+# Normalize line endings: everything is stored with LF in the repository.
+* text=auto eol=lf
+
+# Shell maintainer scripts and Makefiles must never have CRLF endings,
+# otherwise '#!/usr/bin/env dash\r' breaks the package installation.
+debian/rules          text eol=lf
+debian/*.postinst     text eol=lf
+debian/*.postrm       text eol=lf
+debian/*.prerm        text eol=lf
+debian/*.preinst      text eol=lf
+debian/*install       text eol=lf
+debian/*triggers      text eol=lf
+debian/changelog      text eol=lf
+debian/control        text eol=lf
+debian/compat         text eol=lf
+debian/copyright      text eol=lf
+debian/source/format  text eol=lf
+
+# PHP / YAML / JSON / Markdown sources
+*.inc                 text eol=lf
+*.php                 text eol=lf
+*.yaml                text eol=lf
+*.yml                 text eol=lf
+*.json                text eol=lf
+*.md                  text eol=lf

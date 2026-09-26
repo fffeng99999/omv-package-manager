@@ -1,0 +1,80 @@
+[{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.installpkg",
+	"params": {
+		"type": "object",
+		"properties": {
+			"packages": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"required": true
+			},
+			"force": {
+				"type": "boolean"
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.removepkg",
+	"params": {
+		"type": "object",
+		"properties": {
+			"packages": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"required": true
+			},
+			"force": {
+				"type": "boolean",
+				"required": true
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.installedb",
+	"params": {
+		"type": "object",
+		"properties": {
+			"sharedfolderref": {
+				"type": "string",
+				"required": true
+			},
+			"debpath": {
+				"type": "string"
+			},
+			"filename": {
+				"type": "string",
+				"required": true
+			},
+			"force": {
+				"type": "boolean"
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.simulate",
+	"params": {
+		"type": "object",
+		"properties": {
+			"packages": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"required": true
+			},
+			"action": {
+				"type": "string",
+				"enum": ["install", "remove"],
+				"required": true
+			}
+		}
+	}
+}]
