@@ -48,11 +48,82 @@ data:
               flexGrow: 1
               sortable: true
               cellTemplateName: binaryUnit
+            - name: _("Hold")
+              prop: hold
+              flexGrow: 1
+              sortable: true
+              cellTemplateName: checkIcon
             - name: _("Description")
               prop: description
               flexGrow: 3
               sortable: true
           actions:
+            - type: iconButton
+              icon: mdi:information-outline
+              tooltip: _("Details")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              execute:
+                type: url
+                url: "/system/pluginmgr/details/{{ package | encodeuricomponent }}"
+            - type: menu
+              icon: mdi:wrench-outline
+              tooltip: _("Actions")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              actions:
+                - text: _("Preview")
+                  icon: mdi:eye-outline
+                  tooltip: _("Show what would happen before removing this package")
+                  execute:
+                    type: taskDialog
+                    taskDialog:
+                      config:
+                        title: _("Preview of the operation")
+                        startOnInit: true
+                        request:
+                          service: PkgMgr
+                          method: preview
+                          params:
+                            packages:
+                              - "{{ package }}"
+                            action: remove
+                - text: _("Hold")
+                  icon: mdi:lock-outline
+                  tooltip: _("Prevent the package from being upgraded")
+                  enabledConstraints:
+                    constraint:
+                      - operator: falsy
+                        arg0:
+                          prop: hold
+                  execute:
+                    type: request
+                    request:
+                      service: PkgMgr
+                      method: setHold
+                      params:
+                        package: "{{ package }}"
+                        hold: true
+                      successNotification: _("The package is now held. It will not be upgraded automatically.")
+                - text: _("Unhold")
+                  icon: mdi:lock-open-variant-outline
+                  tooltip: _("Allow the package to be upgraded again")
+                  enabledConstraints:
+                    constraint:
+                      - operator: truthy
+                        arg0:
+                          prop: hold
+                  execute:
+                    type: request
+                    request:
+                      service: PkgMgr
+                      method: setHold
+                      params:
+                        package: "{{ package }}"
+                        hold: false
+                      successNotification: _("The package is no longer held and will be upgraded again.")
             - type: iconButton
               icon: mdi:delete-alert
               tooltip: _("Remove")
@@ -63,16 +134,42 @@ data:
                 template: confirmation
                 message: _("Do you really want to remove the selected package? Removing packages may break your system. Packages starting with 'openmediavault' will be refused.")
               execute:
-                type: request
-                request:
-                  service: PkgMgr
-                  method: removePkg
-                  params:
-                    packages:
-                      - "{{ package }}"
-                    force: false
-                  task: true
-                  progressMessage: _("Removing the selected package ...")
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Removing package")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: removePkg
+                      params:
+                        packages:
+                          - "{{ package }}"
+                        purge: false
+                        force: false
+            - type: iconButton
+              icon: mdi:delete-off-outline
+              tooltip: _("Purge")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to purge the selected package? Purging also removes its configuration files.")
+              execute:
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Purging package")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: removePkg
+                      params:
+                        packages:
+                          - "{{ package }}"
+                        purge: true
+                        force: false
       # -------------------------------------------------------------------
       # Available packages
       # -------------------------------------------------------------------
@@ -117,6 +214,34 @@ data:
               sortable: true
           actions:
             - type: iconButton
+              icon: mdi:information-outline
+              tooltip: _("Details")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              execute:
+                type: url
+                url: "/system/pluginmgr/details/{{ package | encodeuricomponent }}"
+            - type: iconButton
+              icon: mdi:eye-outline
+              tooltip: _("Preview")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              execute:
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Preview of the operation")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: preview
+                      params:
+                        packages:
+                          - "{{ package }}"
+                        action: install
+            - type: iconButton
               icon: download
               tooltip: _("Install")
               enabledConstraints:
@@ -126,15 +251,17 @@ data:
                 template: confirmation
                 message: _("Do you really want to install the selected package?")
               execute:
-                type: request
-                request:
-                  service: PkgMgr
-                  method: installPkg
-                  params:
-                    packages:
-                      - "{{ package }}"
-                  task: true
-                  progressMessage: _("Installing the selected package ...")
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Installing package")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: installPkg
+                      params:
+                        packages:
+                          - "{{ package }}"
       # -------------------------------------------------------------------
       # Upgradable packages
       # -------------------------------------------------------------------
@@ -179,15 +306,60 @@ data:
               sortable: true
           actions:
             - type: iconButton
-              icon: mdi:package-up
+              icon: mdi:information-outline
+              tooltip: _("Details")
+              enabledConstraints:
+                minSelected: 1
+                maxSelected: 1
+              execute:
+                type: url
+                url: "/system/pluginmgr/details/{{ package | encodeuricomponent }}"
+            - type: iconButton
+              icon: refresh
               tooltip: _("Update lists")
               execute:
-                type: request
-                request:
-                  service: PkgMgr
-                  method: updateLists
-                  task: true
-                  progressMessage: _("The package index files are downloaded and updated ...")
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Updating the package index files")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: updateLists
+            - type: iconButton
+              icon: mdi:package-up
+              tooltip: _("Upgrade all")
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to upgrade all available packages? This operation may take a long time and may break your OpenMediaVault system.")
+              execute:
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Upgrading all packages")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: upgradeAll
+                      params:
+                        force: false
+            - type: iconButton
+              icon: mdi:broom
+              tooltip: _("Autoremove")
+              confirmationDialogConfig:
+                template: confirmation
+                message: _("Do you really want to remove all packages that were automatically installed and are no longer required?")
+              execute:
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Removing unneeded packages")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: autoremove
+                      params:
+                        force: false
             - type: iconButton
               icon: upload
               tooltip: _("Upgrade")
@@ -198,15 +370,17 @@ data:
                 template: confirmation
                 message: _("Do you really want to upgrade the selected package?")
               execute:
-                type: request
-                request:
-                  service: PkgMgr
-                  method: installPkg
-                  params:
-                    packages:
-                      - "{{ package }}"
-                  task: true
-                  progressMessage: _("Upgrading the selected package ...")
+                type: taskDialog
+                taskDialog:
+                  config:
+                    title: _("Upgrading package")
+                    startOnInit: true
+                    request:
+                      service: PkgMgr
+                      method: installPkg
+                      params:
+                        packages:
+                          - "{{ package }}"
       # -------------------------------------------------------------------
       # Local .deb installation
       # -------------------------------------------------------------------

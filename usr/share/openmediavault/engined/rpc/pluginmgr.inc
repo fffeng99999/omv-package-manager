@@ -44,8 +44,13 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
         $this->registerMethod("installDeb");
         $this->registerMethod("removePkg");
         $this->registerMethod("simulate");
+        $this->registerMethod("preview");
         $this->registerMethod("updateLists");
+        $this->registerMethod("upgradeAll");
+        $this->registerMethod("autoremove");
         $this->registerMethod("getDebInfo");
+        $this->registerMethod("getPkgDetails");
+        $this->registerMethod("setHold");
     }
 
     /**
@@ -74,6 +79,19 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
         if (0 !== $exitStatus) {
             throw new \OMV\ExecException($cmd, $output, $exitStatus);
         }
+        // Get the list of packages that are held back ('apt-mark showhold').
+        $held = [];
+        $holdCmd = new \OMV\System\Process("apt-mark", ["showhold"]);
+        $holdCmd->setQuiet(true);
+        $holdCmd->execute($holdOutput, $holdStatus);
+        if (0 === $holdStatus) {
+            foreach ($holdOutput as $name) {
+                $name = trim($name);
+                if ("" !== $name) {
+                    $held[$name] = true;
+                }
+            }
+        }
         $objects = [];
         foreach ($output as $line) {
             $line = rtrim($line, "\r\n");
@@ -90,6 +108,7 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
                 "version" => $fields[1],
                 "architecture" => $fields[2],
                 "size" => intval($fields[3]) * 1024,
+                "hold" => isset($held[$fields[0]]),
                 "description" => $fields[5]
             ];
         }
@@ -196,6 +215,7 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             "role" => OMV_ROLE_ADMINISTRATOR
         ]);
         $this->validateMethodParams($params, "rpc.pluginmgr.installpkg");
+        $params['packages'] = self::normalizePackages($params['packages']);
         \OMV\System\Apt::assertNotLocked();
         $args = array_merge(
             ["--yes", "install"],
@@ -243,9 +263,10 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             "role" => OMV_ROLE_ADMINISTRATOR
         ]);
         $this->validateMethodParams($params, "rpc.pluginmgr.removepkg");
+        $params['packages'] = self::normalizePackages($params['packages']);
         \OMV\System\Apt::assertNotLocked();
         $args = array_merge(
-            ["--yes", "remove"],
+            ["--yes", ($params['purge'] ?? false) ? "purge" : "remove"],
             array_map("escapeshellarg", $params['packages'])
         );
         // Hard protection for the OpenMediaVault installation itself.
@@ -281,12 +302,37 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             "role" => OMV_ROLE_ADMINISTRATOR
         ]);
         $this->validateMethodParams($params, "rpc.pluginmgr.simulate");
+        $params['packages'] = self::normalizePackages($params['packages']);
         $result = $this->runSimulation(array_merge(
             [$params['action']],
             array_map("escapeshellarg", $params['packages'])
         ));
         $result['removesOmv'] = self::hasOmvRemoval($result['remove']);
         return $result;
+    }
+
+    /**
+     * Run 'apt-get --simulate' as a background task so the raw output
+     * (the packages that would be installed/removed/upgraded) can be
+     * shown in a task dialog before the real operation is executed.
+     * This mirrors the dependency preview of the OpenWrt package manager.
+     * @param params An array containing the fields 'packages' (array of
+     *   package names) and 'action' ('install'|'remove'|'upgrade').
+     * @return The name of the background process status file.
+     */
+    public function preview($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        $this->validateMethodParams($params, "rpc.pluginmgr.simulate");
+        $params['packages'] = self::normalizePackages($params['packages']);
+        $args = array_merge(
+            ["--quiet", "--simulate", "--yes"],
+            [$params['action']],
+            array_map("escapeshellarg", $params['packages'])
+        );
+        return $this->executeApt($args);
     }
 
     /**
@@ -300,6 +346,69 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
         ]);
         \OMV\System\Apt::assertNotLocked();
         return $this->executeApt(["update"]);
+    }
+
+    /**
+     * Upgrade all installed packages ('apt-get --yes upgrade').
+     * @param params An array containing the optional field 'force' to skip
+     *   the 'openmediavault' removal protection.
+     * @return The name of the background process status file.
+     */
+    public function upgradeAll($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        \OMV\System\Apt::assertNotLocked();
+        $params = is_array($params) ? $params : [];
+        $args = ["--yes", "upgrade"];
+        $this->assertNoOmvRemoval($args, $params['force'] ?? false);
+        return $this->executeApt($args);
+    }
+
+    /**
+     * Remove automatically installed packages that are no longer required
+     * ('apt-get --yes autoremove').
+     * @param params An array containing the optional field 'force' to skip
+     *   the 'openmediavault' removal protection.
+     * @return The name of the background process status file.
+     */
+    public function autoremove($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        \OMV\System\Apt::assertNotLocked();
+        $params = is_array($params) ? $params : [];
+        $args = ["--yes", "autoremove"];
+        $this->assertNoOmvRemoval($args, $params['force'] ?? false);
+        return $this->executeApt($args);
+    }
+
+    /**
+     * Mark a package as held ('apt-mark hold') or not held
+     * ('apt-mark unhold'). Held packages are not upgraded automatically.
+     * @param params An array containing the fields 'package' (string) and
+     *   'hold' (boolean).
+     * @return An associative array with the field 'output'.
+     */
+    public function setHold($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        $this->validateMethodParams($params, "rpc.pluginmgr.sethold");
+        $cmd = new \OMV\System\Process("apt-mark", [
+            ($params['hold'] ? "hold" : "unhold"),
+            escapeshellarg($params['package'])
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->setRedirect2to1();
+        $cmd->execute($output, $exitStatus);
+        if (0 !== $exitStatus) {
+            throw new \OMV\ExecException($cmd, $output, $exitStatus);
+        }
+        return ["output" => implode("\n", $output)];
     }
 
     /**
@@ -332,6 +441,217 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             }
         }
         return $info;
+    }
+
+    /**
+     * Get the details of a package (installed and/or available in the
+     * configured repositories). Used by the package details page.
+     * @param params An array containing the field 'package'.
+     * @return An associative array with the package meta data.
+     */
+    public function getPkgDetails($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        $this->validateMethodParams($params, "rpc.pluginmgr.pkgdetails");
+        $package = $params['package'];
+        // Package names must be safe: Debian policy allows lowercase
+        // letters, digits, '+', '.', '-' and '_'.
+        if (1 !== preg_match("/^[a-z0-9+._-]+$/", $package)) {
+            throw new \OMV\Exception(
+                "Invalid package name '%s'.", $package
+            );
+        }
+        $result = [
+            "package" => $package,
+            "version" => "",
+            "architecture" => "",
+            "maintainer" => "",
+            "homepage" => "",
+            "section" => "",
+            "priority" => "",
+            "installedSize" => "",
+            "downloadSize" => "",
+            "depends" => "",
+            "preDepends" => "",
+            "recommends" => "",
+            "suggests" => "",
+            "breaks" => "",
+            "replaces" => "",
+            "description" => "",
+            "installed" => false,
+            "installedVersion" => "",
+            "hold" => false,
+            "candidate" => "",
+            "origin" => "",
+            "status" => "Not installed",
+            "installedSizeText" => "",
+            "downloadSizeText" => ""
+        ];
+        // Parse the first record of 'apt-cache show <package>'.
+        $cmd = new \OMV\System\Process("apt-cache", [
+            "show", escapeshellarg($package)
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->execute($output, $exitStatus);
+        if (0 === $exitStatus) {
+            $fields = $this->parseDebianControl(implode("\n", $output));
+            $map = [
+                "version" => "version",
+                "architecture" => "architecture",
+                "maintainer" => "maintainer",
+                "homepage" => "homepage",
+                "section" => "section",
+                "priority" => "priority",
+                "depends" => "depends",
+                "pre-depends" => "preDepends",
+                "recommends" => "recommends",
+                "suggests" => "suggests",
+                "breaks" => "breaks",
+                "replaces" => "replaces"
+            ];
+            foreach ($map as $key => $prop) {
+                if (isset($fields[$key])) {
+                    $result[$prop] = $fields[$key];
+                }
+            }
+            if (isset($fields['installed-size'])) {
+                $result['installedSize'] = intval($fields['installed-size']) * 1024;
+            }
+            if (isset($fields['size'])) {
+                $result['downloadSize'] = intval($fields['size']);
+            }
+            if (isset($fields['description'])) {
+                $result['description'] = $fields['description'];
+            }
+        }
+        // Installed status and version.
+        $cmd = new \OMV\System\Process("dpkg-query", [
+            "-W", "-f='${Version}\t${Status}\n'",
+            escapeshellarg($package)
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->execute($output, $exitStatus);
+        if ((0 === $exitStatus) && !empty($output) &&
+            (2 === count($fields = explode("\t", rtrim($output[0], "\r\n"))))) {
+            if ("install ok installed" === $fields[1]) {
+                $result['installed'] = true;
+                $result['installedVersion'] = $fields[0];
+            }
+        }
+        // Hold status.
+        $cmd = new \OMV\System\Process("apt-mark", [
+            "showhold", escapeshellarg($package)
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->execute($output, $exitStatus);
+        if ((0 === $exitStatus) && (trim($output[0] ?? "") === $package)) {
+            $result['hold'] = true;
+        }
+        // Candidate version and origin ('apt-cache policy').
+        $cmd = new \OMV\System\Process("apt-cache", [
+            "policy", escapeshellarg($package)
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->execute($output, $exitStatus);
+        if (0 === $exitStatus) {
+            foreach ($output as $line) {
+                $line = rtrim($line, "\r\n");
+                if (1 === preg_match("/^\s*Candidate:\s*(.+)$/", $line, $m)) {
+                    $result['candidate'] = trim($m[1]);
+                } elseif (("" === $result['origin']) &&
+                    1 === preg_match("/^\s*\d+\s+(\S+)\s/", $line, $m) &&
+                    (0 !== strpos($m[1], "/"))) {
+                    // First repository URI of the version table.
+                    $result['origin'] = trim($m[1]);
+                }
+            }
+        }
+        // Pre-computed display strings. They are untranslated on purpose:
+        // the workbench templates pipe them through the 'translate' filter,
+        // which uses the plugin translation catalog of the selected UI
+        // language.
+        if ($result['installed']) {
+            $result['status'] =
+                (("" !== $result['candidate']) &&
+                 ("(none)" !== $result['candidate']) &&
+                 ($result['candidate'] !== $result['installedVersion']))
+                    ? "Upgradable" : "Installed";
+        }
+        if (is_int($result['installedSize'])) {
+            $result['installedSizeText'] = self::formatSize($result['installedSize']);
+        }
+        if (is_int($result['downloadSize'])) {
+            $result['downloadSizeText'] = self::formatSize($result['downloadSize']);
+        }
+        return $result;
+    }
+
+    /**
+     * Format a byte count as a human readable string (SI units are
+     * language independent, so this does not need translation).
+     * @param bytes The number of bytes.
+     * @return The formatted string, e.g. '1.5 MiB'.
+     */
+    private static function formatSize($bytes)
+    {
+        $units = ["B", "KiB", "MiB", "GiB", "TiB"];
+        $i = 0;
+        $value = floatval($bytes);
+        while (($value >= 1024) && ($i < count($units) - 1)) {
+            $value /= 1024;
+            $i++;
+        }
+        return sprintf(
+            ((0 === $i) ? "%d %s" : "%.1f %s"),
+            $value,
+            $units[$i]
+        );
+    }
+
+    /**
+     * Parse the fields of a Debian control style record (the first
+     * paragraph of the output). Multi-line values (e.g. Description)
+     * are joined with a newline.
+     * @param text The control record text.
+     * @return An associative array with lowercased field names.
+     */
+    private function parseDebianControl($text)
+    {
+        $fields = [];
+        $name = null;
+        $value = null;
+        $flush = function () use (&$fields, &$name, &$value) {
+            if (null !== $name) {
+                $fields[strtolower($name)] = trim($value ?? "");
+            }
+            $name = $value = null;
+        };
+        foreach (preg_split("/\r?\n/", $text) as $line) {
+            if ("" === trim($line)) {
+                // End of the first record.
+                if (null !== $name) {
+                    $flush();
+                    break;
+                }
+                continue;
+            }
+            if ((" " === $line[0]) || ("\t" === $line[0])) {
+                // Continuation line.
+                if (null !== $name) {
+                    $value .= "\n".ltrim($line);
+                }
+                continue;
+            }
+            $flush();
+            if (1 === preg_match("/^([A-Za-z-]+):\s*(.*)$/", $line, $m)) {
+                $name = $m[1];
+                $value = $m[2];
+            }
+        }
+        $flush();
+        return $fields;
     }
 
     /**
@@ -422,6 +742,25 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
                 )))
             );
         }
+    }
+
+    /**
+     * Normalize the 'packages' RPC parameter. The web interface passes a
+     * single package name as a string (e.g. "{{ package }}"); convert it
+     * into an array so the callers can always iterate.
+     * @param packages A string or an array of package names.
+     * @return An array of non-empty package names.
+     */
+    private static function normalizePackages($packages)
+    {
+        if (!is_array($packages)) {
+            $packages = [$packages];
+        }
+        return array_values(array_filter(array_map(function ($package) {
+            return trim(strval($package));
+        }, $packages), function ($package) {
+            return "" !== $package;
+        }));
     }
 
     /**

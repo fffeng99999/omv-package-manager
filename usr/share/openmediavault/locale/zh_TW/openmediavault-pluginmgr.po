@@ -1,0 +1,239 @@
+# Translation of openmediavault-pluginmgr in Chinese (Taiwan).
+# Copyright (C) 2026 fffeng99999
+# This file is distributed under the same license as the openmediavault-pluginmgr package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: openmediavault-pluginmgr 8.0.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-27 12:00+0800\n"
+"PO-Revision-Date: 2026-09-27 12:00+0800\n"
+"Last-Translator: fffeng99999 <zhenglinfeng158@gmail.com>\n"
+"Language-Team: Chinese (Taiwan)\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Package Manager"
+msgstr "軟體套件管理員"
+
+msgid "Package details"
+msgstr "套件詳細資訊"
+
+msgid "Package"
+msgstr "套件"
+
+msgid "Status"
+msgstr "狀態"
+
+msgid "Installed version"
+msgstr "已安裝版本"
+
+msgid "Repository version"
+msgstr "儲存庫版本"
+
+msgid "Candidate"
+msgstr "候選版本"
+
+msgid "Architecture"
+msgstr "架構"
+
+msgid "Origin"
+msgstr "來源"
+
+msgid "Section"
+msgstr "區段"
+
+msgid "Priority"
+msgstr "優先順序"
+
+msgid "Hold"
+msgstr "保留"
+
+msgid "Installed size"
+msgstr "安裝大小"
+
+msgid "Download size"
+msgstr "下載大小"
+
+msgid "Maintainer"
+msgstr "維護者"
+
+msgid "Homepage"
+msgstr "首頁"
+
+msgid "Dependencies"
+msgstr "相依"
+
+msgid "Pre-depends"
+msgstr "前置相依"
+
+msgid "Recommends"
+msgstr "建議安裝"
+
+msgid "Suggests"
+msgstr "可選安裝"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Installed"
+msgstr "已安裝"
+
+msgid "Not installed"
+msgstr "未安裝"
+
+msgid "Upgradable"
+msgstr "可升級"
+
+msgid "Package operations may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing. Packages starting with 'openmediavault' are protected against removal."
+msgstr "套件操作可能會破壞您的 OpenMediaVault 系統。請確保在繼續之前已備妥目前的設定備份。以 'openmediavault' 開頭的套件受保護，不會被移除。"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Details"
+msgstr "詳細資訊"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Preview"
+msgstr "預覽"
+
+msgid "Show what would happen before removing this package"
+msgstr "在移除此套件前顯示將會發生的情況"
+
+msgid "Preview of the operation"
+msgstr "操作預覽"
+
+msgid "Prevent the package from being upgraded"
+msgstr "防止此套件被升級"
+
+msgid "The package is now held. It will not be upgraded automatically."
+msgstr "此套件已保留，將不會自動升級。"
+
+msgid "Unhold"
+msgstr "取消保留"
+
+msgid "Allow the package to be upgraded again"
+msgstr "允許此套件再次升級"
+
+msgid "The package is no longer held and will be upgraded again."
+msgstr "此套件已取消保留，將再次升級。"
+
+msgid "Remove"
+msgstr "移除"
+
+msgid "Do you really want to remove the selected package? Removing packages may break your system. Packages starting with 'openmediavault' will be refused."
+msgstr "您確定要移除所選套件嗎？移除套件可能會破壞您的系統。以 'openmediavault' 開頭的套件將被拒絕移除。"
+
+msgid "Removing package"
+msgstr "正在移除套件"
+
+msgid "Purge"
+msgstr "清除"
+
+msgid "Do you really want to purge the selected package? Purging also removes its configuration files."
+msgstr "您確定要清除所選套件嗎？清除動作還會一併刪除其設定檔。"
+
+msgid "Purging package"
+msgstr "正在清除套件"
+
+msgid "Available"
+msgstr "可用"
+
+msgid "Installing packages may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing."
+msgstr "安裝套件可能會破壞您的 OpenMediaVault 系統。請確保在繼續之前已備妥目前的設定備份。"
+
+msgid "Install"
+msgstr "安裝"
+
+msgid "Do you really want to install the selected package?"
+msgstr "您確定要安裝所選套件嗎？"
+
+msgid "Installing package"
+msgstr "正在安裝套件"
+
+msgid "Updates"
+msgstr "更新"
+
+msgid "Upgrading packages may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing."
+msgstr "升級套件可能會破壞您的 OpenMediaVault 系統。請確保在繼續之前已備妥目前的設定備份。"
+
+msgid "Current"
+msgstr "目前"
+
+msgid "New"
+msgstr "新版"
+
+msgid "Update lists"
+msgstr "更新清單"
+
+msgid "Updating the package index files"
+msgstr "正在更新套件索引檔"
+
+msgid "Upgrade all"
+msgstr "全部升級"
+
+msgid "Do you really want to upgrade all available packages? This operation may take a long time and may break your OpenMediaVault system."
+msgstr "您確定要升級所有可用套件嗎？此操作可能耗時較長，並可能破壞您的 OpenMediaVault 系統。"
+
+msgid "Upgrading all packages"
+msgstr "正在升級所有套件"
+
+msgid "Autoremove"
+msgstr "自動移除"
+
+msgid "Do you really want to remove all packages that were automatically installed and are no longer required?"
+msgstr "您確定要移除所有自動安裝且已不需要的套件嗎？"
+
+msgid "Removing unneeded packages"
+msgstr "正在移除不再需要的套件"
+
+msgid "Upgrade"
+msgstr "升級"
+
+msgid "Do you really want to upgrade the selected package?"
+msgstr "您確定要升級所選套件嗎？"
+
+msgid "Upgrading package"
+msgstr "正在升級套件"
+
+msgid "Local deb"
+msgstr "本機 deb"
+
+msgid "Select the shared folder and the .deb file to install. Upload the .deb file to a shared folder first (e.g. via File Browser or SMB)."
+msgstr "選擇要安裝的共用資料夾與 .deb 檔案。請先將 .deb 檔案上傳到共用資料夾（例如透過 File Browser 或 SMB）。"
+
+msgid "Shared folder"
+msgstr "共用資料夾"
+
+msgid "The shared folder that contains the .deb file."
+msgstr "包含該 .deb 檔案的共用資料夾。"
+
+msgid "Folder"
+msgstr "資料夾"
+
+msgid "The directory below the shared folder root that contains the .deb file."
+msgstr "共用資料夾根目錄下包含該 .deb 檔案的目錄。"
+
+msgid "Filename"
+msgstr "檔案名稱"
+
+msgid "The name of the .deb file, e.g. 'openmediavault-example_1.0_all.deb'."
+msgstr ".deb 檔案的名稱，例如 'openmediavault-example_1.0_all.deb'。"
+
+msgid "Show package info"
+msgstr "顯示套件資訊"
+
+msgid "Package {{ _response['package'] }} version {{ _response['version'] }} architecture {{ _response['architecture'] }}"
+msgstr "套件 {{ _response['package'] }}，版本 {{ _response['version'] }}，架構 {{ _response['architecture'] }}"
+
+msgid "Do you really want to install this local .deb package? Installing packages may break your system."
+msgstr "您確定要安裝此本機 .deb 套件嗎？安裝套件可能會破壞您的系統。"

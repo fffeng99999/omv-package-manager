@@ -1,0 +1,103 @@
+version: "1.0"
+type: component
+data:
+  name: omv-system-pluginmgr-details-form-page
+  type: formPage
+  config:
+    title: _("Package details")
+    request:
+      service: PkgMgr
+      get:
+        method: getPkgDetails
+        params:
+          package: "{{ _routeParams.package }}"
+        transform:
+          statusText: "{{ status | translate }}"
+          holdText: "{{ hold | yesno }}"
+    fields:
+      - type: textInput
+        name: package
+        label: _("Package")
+        readonly: true
+      - type: textInput
+        name: statusText
+        label: _("Status")
+        readonly: true
+      - type: textInput
+        name: installedVersion
+        label: _("Installed version")
+        readonly: true
+      - type: textInput
+        name: version
+        label: _("Repository version")
+        readonly: true
+      - type: textInput
+        name: candidate
+        label: _("Candidate")
+        readonly: true
+      - type: textInput
+        name: architecture
+        label: _("Architecture")
+        readonly: true
+      - type: textInput
+        name: origin
+        label: _("Origin")
+        readonly: true
+      - type: textInput
+        name: section
+        label: _("Section")
+        readonly: true
+      - type: textInput
+        name: priority
+        label: _("Priority")
+        readonly: true
+      - type: textInput
+        name: holdText
+        label: _("Hold")
+        readonly: true
+      - type: textInput
+        name: installedSizeText
+        label: _("Installed size")
+        readonly: true
+      - type: textInput
+        name: downloadSizeText
+        label: _("Download size")
+        readonly: true
+      - type: textInput
+        name: maintainer
+        label: _("Maintainer")
+        readonly: true
+      - type: textInput
+        name: homepage
+        label: _("Homepage")
+        readonly: true
+      - type: textarea
+        name: depends
+        label: _("Dependencies")
+        readonly: true
+        rows: 3
+      - type: textarea
+        name: preDepends
+        label: _("Pre-depends")
+        readonly: true
+        rows: 2
+      - type: textarea
+        name: recommends
+        label: _("Recommends")
+        readonly: true
+        rows: 2
+      - type: textarea
+        name: suggests
+        label: _("Suggests")
+        readonly: true
+        rows: 2
+      - type: textarea
+        name: description
+        label: _("Description")
+        readonly: true
+        rows: 6
+    buttons:
+      - template: back
+        execute:
+          type: url
+          url: /system/pluginmgr

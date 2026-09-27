@@ -1,0 +1,6 @@
+version: "1.0"
+type: route
+data:
+  url: "/system/pluginmgr/details/:package"
+  title: "{{ 'Package details' | translate }} @ {{ _routeParams.package | decodeuricomponent }}"
+  component: omv-system-pluginmgr-details-form-page

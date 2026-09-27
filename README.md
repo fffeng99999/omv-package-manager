@@ -13,13 +13,31 @@ version (OMV 8.x → plugin `8.x.y`).
 Single page with four tabs:
 
 - **Installed** – all installed packages (name / version / architecture / size /
-  description) with debounced search and per-package *Remove*.
-- **Available** – all packages from the configured repositories with *Install*.
-- **Updates** – upgradable packages (current » new) with *Upgrade* and an
-  *Update lists* (`apt-get update`) action.
+  hold / description) with debounced search and per-package actions.
+- **Available** – all packages from the configured repositories.
+- **Updates** – upgradable packages (current » new) plus *Update lists*
+  (`apt-get update`), *Upgrade all* and *Autoremove*.
 - **Local deb** – install a `.deb` file from a shared folder: pick the shared
   folder, browse the directory, type the file name, optionally show the package
   info (`dpkg-deb --field`) before installing.
+
+Per-package actions (inspired by OpenWrt's `luci-app-package-manager`):
+
+- **Details** – a full package information page (versions, sizes, repository
+  origin/candidate, dependencies, description, hold state).
+- **Install / Remove / Purge** – purge also deletes configuration files.
+- **Preview** – run `apt-get --simulate` in a live task dialog to see exactly
+  what an operation would change before doing it.
+- **Hold / Unhold** – pin a package so it is not upgraded (`apt-mark`).
+- All operations stream the raw `apt` output in a task dialog.
+
+Internationalization:
+
+- Simplified Chinese (`zh_CN`) and Traditional Chinese (`zh_TW`) catalogs are
+  shipped. When the system language is Chinese, the navigation entry
+  (**System → Package Manager**) and every web interface label are translated.
+  Add more languages by dropping a `<locale>/openmediavault-pluginmgr.po` file
+  under `usr/share/openmediavault/locale/`.
 
 Safety:
 
@@ -42,7 +60,7 @@ Safety:
 2. Install it via CLI on the NAS (first install must use the CLI):
 
    ```bash
-   apt install ./openmediavault-pluginmgr_8.0.1_all.deb
+   apt install ./openmediavault-pluginmgr_8.0.2_all.deb
    ```
 
 3. Open the web interface: **System → Package Manager**.

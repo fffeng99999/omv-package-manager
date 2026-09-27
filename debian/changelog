@@ -1,3 +1,22 @@
+openmediavault-pluginmgr (8.0.2) stable; urgency=medium
+
+  * Feature iteration inspired by OpenWrt's luci-app-package-manager:
+    - Package details page (version, sizes, dependencies, description,
+      repository origin/candidate, hold state).
+    - Hold/unhold packages (apt-mark) with a new 'Hold' column in the
+      installed list.
+    - Purge packages (remove + delete configuration files).
+    - Operation preview: show the 'apt-get --simulate' output in a task
+      dialog before removing/installing.
+    - Upgrade all packages and autoremove unneeded packages.
+    - Install/remove/upgrade operations now show the raw apt output in
+      a live task dialog.
+  * Add Simplified Chinese (zh_CN) and Traditional Chinese (zh_TW)
+    translation catalogs; the navigation entry and all web interface
+    labels are translated when the system language is Chinese.
+
+ -- fffeng99999 <zhenglinfeng158@gmail.com>  Sun, 27 Sep 2026 15:00:00 +0800
+
 openmediavault-pluginmgr (8.0.1) stable; urgency=medium
 
   * Initial release: package manager plugin (installed/available/

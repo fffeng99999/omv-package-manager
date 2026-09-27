@@ -29,6 +29,9 @@
 				},
 				"required": true
 			},
+			"purge": {
+				"type": "boolean"
+			},
 			"force": {
 				"type": "boolean",
 				"required": true
@@ -72,7 +75,35 @@
 			},
 			"action": {
 				"type": "string",
-				"enum": ["install", "remove"],
+				"enum": ["install", "remove", "upgrade", "autoremove"],
+				"required": true
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.sethold",
+	"params": {
+		"type": "object",
+		"properties": {
+			"package": {
+				"type": "string",
+				"required": true
+			},
+			"hold": {
+				"type": "boolean",
+				"required": true
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.pkgdetails",
+	"params": {
+		"type": "object",
+		"properties": {
+			"package": {
+				"type": "string",
 				"required": true
 			}
 		}
