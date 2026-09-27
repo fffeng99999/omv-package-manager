@@ -1,7 +1,7 @@
 # Translation template for openmediavault-pluginmgr.
 # Copyright (C) 2026 fffeng99999
 # This file is distributed under the same license as the openmediavault-pluginmgr package.
-# fffeng99999 <zhenglinfeng158@gmail.com>, 2026.
+# fffeng99999, 2026.
 #
 #, fuzzy
 msgid ""

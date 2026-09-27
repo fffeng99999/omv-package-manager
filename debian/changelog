@@ -5,7 +5,7 @@ openmediavault-pluginmgr (8.0.3) stable; urgency=medium
     restores the installed version/status and hold detection on the
     package details page.
 
- -- fffeng99999 <zhenglinfeng158@gmail.com>  Sun, 27 Sep 2026 12:30:00 +0800
+ -- fffeng99999  Sun, 27 Sep 2026 12:30:00 +0800
 
 openmediavault-pluginmgr (8.0.2) stable; urgency=medium
 
@@ -24,7 +24,7 @@ openmediavault-pluginmgr (8.0.2) stable; urgency=medium
     translation catalogs; the navigation entry and all web interface
     labels are translated when the system language is Chinese.
 
- -- fffeng99999 <zhenglinfeng158@gmail.com>  Sun, 27 Sep 2026 15:00:00 +0800
+ -- fffeng99999  Sun, 27 Sep 2026 15:00:00 +0800
 
 openmediavault-pluginmgr (8.0.1) stable; urgency=medium
 
@@ -35,4 +35,4 @@ openmediavault-pluginmgr (8.0.1) stable; urgency=medium
   * Version scheme: major version follows the OpenMediaVault major
     version (OMV 8.x -> plugin 8.x.y).
 
- -- fffeng99999 <zhenglinfeng158@gmail.com>  Sun, 27 Sep 2026 05:00:00 +0800
+ -- fffeng99999  Sun, 27 Sep 2026 05:00:00 +0800

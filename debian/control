@@ -2,7 +2,7 @@ Source: openmediavault-pluginmgr
 Section: admin
 XB-Plugin-Section: utilities
 Priority: optional
-Maintainer: fffeng99999 <zhenglinfeng158@gmail.com>
+Maintainer: fffeng99999
 Build-Depends: debhelper (>= 12)
 Standards-Version: 3.9.6
 Homepage: https://github.com/fffeng99999/omv-package-manager
