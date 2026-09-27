@@ -60,7 +60,7 @@ Safety:
 2. Install it via CLI on the NAS (first install must use the CLI):
 
    ```bash
-   apt install ./openmediavault-pluginmgr_8.0.2_all.deb
+   apt install ./openmediavault-pluginmgr_8.0.3_all.deb
    ```
 
 3. Open the web interface: **System → Package Manager**.

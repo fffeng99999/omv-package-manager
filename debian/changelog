@@ -1,3 +1,12 @@
+openmediavault-pluginmgr (8.0.3) stable; urgency=medium
+
+  * Fix getPkgDetails: PHP exec() appends to the output array instead of
+    clearing it; each command now uses its own output variable. This
+    restores the installed version/status and hold detection on the
+    package details page.
+
+ -- fffeng99999 <zhenglinfeng158@gmail.com>  Sun, 27 Sep 2026 12:30:00 +0800
+
 openmediavault-pluginmgr (8.0.2) stable; urgency=medium
 
   * Feature iteration inspired by OpenWrt's luci-app-package-manager:

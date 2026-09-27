@@ -489,14 +489,17 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             "installedSizeText" => "",
             "downloadSizeText" => ""
         ];
-        // Parse the first record of 'apt-cache show <package>'.
+        // Parse the first record of 'apt-cache show <package>'. Note:
+        // every command uses its own output variable because PHP's exec()
+        // (used by \OMV\System\Process::execute) appends to the array
+        // instead of clearing it.
         $cmd = new \OMV\System\Process("apt-cache", [
             "show", escapeshellarg($package)
         ]);
         $cmd->setQuiet(true);
-        $cmd->execute($output, $exitStatus);
+        $cmd->execute($showOutput, $exitStatus);
         if (0 === $exitStatus) {
-            $fields = $this->parseDebianControl(implode("\n", $output));
+            $fields = $this->parseDebianControl(implode("\n", $showOutput));
             $map = [
                 "version" => "version",
                 "architecture" => "architecture",
@@ -526,15 +529,18 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
                 $result['description'] = $fields['description'];
             }
         }
-        // Installed status and version.
+        // Installed status and version. Note: the format string must be a
+        // PHP single-quoted string with literal shell quotes, otherwise
+        // '${Version}' would be interpolated by PHP (see getInstalledList).
         $cmd = new \OMV\System\Process("dpkg-query", [
-            "-W", "-f='${Version}\t${Status}\n'",
+            "-W",
+            '-f=\'${Version}\t${Status}\n\'',
             escapeshellarg($package)
         ]);
         $cmd->setQuiet(true);
-        $cmd->execute($output, $exitStatus);
-        if ((0 === $exitStatus) && !empty($output) &&
-            (2 === count($fields = explode("\t", rtrim($output[0], "\r\n"))))) {
+        $cmd->execute($queryOutput, $exitStatus);
+        if ((0 === $exitStatus) && !empty($queryOutput) &&
+            (2 === count($fields = explode("\t", rtrim($queryOutput[0], "\r\n"))))) {
             if ("install ok installed" === $fields[1]) {
                 $result['installed'] = true;
                 $result['installedVersion'] = $fields[0];
@@ -545,8 +551,8 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             "showhold", escapeshellarg($package)
         ]);
         $cmd->setQuiet(true);
-        $cmd->execute($output, $exitStatus);
-        if ((0 === $exitStatus) && (trim($output[0] ?? "") === $package)) {
+        $cmd->execute($holdOutput, $exitStatus);
+        if ((0 === $exitStatus) && (trim($holdOutput[0] ?? "") === $package)) {
             $result['hold'] = true;
         }
         // Candidate version and origin ('apt-cache policy').
@@ -554,9 +560,9 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             "policy", escapeshellarg($package)
         ]);
         $cmd->setQuiet(true);
-        $cmd->execute($output, $exitStatus);
+        $cmd->execute($policyOutput, $exitStatus);
         if (0 === $exitStatus) {
-            foreach ($output as $line) {
+            foreach ($policyOutput as $line) {
                 $line = rtrim($line, "\r\n");
                 if (1 === preg_match("/^\s*Candidate:\s*(.+)$/", $line, $m)) {
                     $result['candidate'] = trim($m[1]);
