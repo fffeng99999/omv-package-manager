@@ -3,7 +3,7 @@
 # This file is part of OpenMediaVault.
 #
 # @license   https://www.gnu.org/licenses/gpl.html GPL Version 3
-# @author    fffeng99999
+# @author    ${GITHUB_USER}
 #
 # OpenMediaVault is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

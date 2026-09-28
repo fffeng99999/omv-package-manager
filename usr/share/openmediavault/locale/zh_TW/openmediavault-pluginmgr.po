@@ -1,5 +1,5 @@
 # Translation of openmediavault-pluginmgr in Chinese (Taiwan).
-# Copyright (C) 2026 fffeng99999
+# Copyright (C) 2026 ${GITHUB_USER}
 # This file is distributed under the same license as the openmediavault-pluginmgr package.
 #
 msgid ""
@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-27 12:00+0800\n"
 "PO-Revision-Date: 2026-09-27 12:00+0800\n"
-"Last-Translator: fffeng99999\n"
+"Last-Translator: ${GITHUB_USER}\n"
 "Language-Team: Chinese (Taiwan)\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"

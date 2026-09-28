@@ -55,6 +55,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Render build variables
+        run: sh ./render-vars.sh
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -81,6 +84,10 @@ jobs:
       - name: Inspect package
         run: |
           DEB=$(ls "$GITHUB_WORKSPACE"/dist/*.deb)
+          if dpkg-deb -f "$DEB" | grep -q '\${'; then
+            echo "ERROR: unresolved placeholder left in package metadata (render-vars.sh not run?)"
+            exit 1
+          fi
           echo "== control =="; dpkg-deb -f "$DEB"
           echo "== contents =="; dpkg-deb -c "$DEB"
 
