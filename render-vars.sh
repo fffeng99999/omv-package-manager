@@ -2,7 +2,7 @@
 #
 # 打包前把源文件里的 ${VAR} 占位符渲染成 debian/variables.env 中的实际取值。
 #
-# 工作区级权威取值见 omv-plugins 工作区 project_rules.md 的「全局变量定义表」；
+# 工作区级权威取值见 omv-plugins 工作区 project_rules_ops.md 的「全局变量定义表」；
 # 本文件只保留构建真正需要的最小变量，值必须与其保持一致。
 #
 # 用法：  sh ./render-vars.sh   （就地改写工作区文件；CI 已在 dpkg-buildpackage 前自动执行）
