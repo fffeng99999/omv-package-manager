@@ -42,6 +42,10 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
         $this->registerMethod("getUpgradableListBg");
         $this->registerMethod("installPkg");
         $this->registerMethod("installDeb");
+        $this->registerMethod("getLocalDebList");
+        $this->registerMethod("getLocalDebListBg");
+        $this->registerMethod("getLocalDebInfo");
+        $this->registerMethod("installLocalDeb");
         $this->registerMethod("removePkg");
         $this->registerMethod("simulate");
         $this->registerMethod("preview");
@@ -244,6 +248,92 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
         $this->validateMethodParams($params, "rpc.pluginmgr.installedb");
         \OMV\System\Apt::assertNotLocked();
         $path = $this->validateDebPath($params, $context);
+        $args = ["--yes", "install", escapeshellarg($path)];
+        $this->assertNoOmvRemoval($args, $params['force'] ?? false);
+        return $this->executeApt($args);
+    }
+
+    /**
+     * Get the list of .deb files that are located in the temporary
+     * directory (/tmp) of the system. This includes files uploaded via
+     * the web interface upload page (pkgupload.php) and files that have
+     * been copied to /tmp by other means.
+     * @param params Standard 'getlist' parameters (start/limit/sortfield/
+     *   sortdir/search).
+     * @return An array containing the fields 'total' and 'data'.
+     */
+    public function getLocalDebList($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        $this->validateMethodParams($params, "rpc.common.getlist");
+        $objects = self::scanLocalDebs();
+        return $this->applyFilter(
+            $objects,
+            $params['start'],
+            $params['limit'],
+            $params['sortfield'],
+            $params['sortdir'],
+            $params['search']
+        );
+    }
+
+    public function getLocalDebListBg($params, $context)
+    {
+        return $this->callMethodBg("getLocalDebList", $params, $context);
+    }
+
+    /**
+     * Read the meta data of a .deb file located in /tmp.
+     * @param params An array containing the following fields:
+     *   \em filename The name of the .deb file (without path).
+     * @return An associative array with the dpkg-deb fields.
+     */
+    public function getLocalDebInfo($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        $this->validateMethodParams($params, "rpc.pluginmgr.localdebinfo");
+        $path = $this->getLocalDebPath($params['filename']);
+        $cmd = new \OMV\System\Process("dpkg-deb", [
+            "--field",
+            escapeshellarg($path),
+            "Package", "Version", "Architecture", "Maintainer",
+            "Installed-Size", "Description"
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->execute($output, $exitStatus);
+        if (0 !== $exitStatus) {
+            throw new \OMV\ExecException($cmd, $output, $exitStatus);
+        }
+        $info = [];
+        foreach ($output as $line) {
+            if (1 === preg_match("/^(\S+):\s*(.*)$/", $line, $matches)) {
+                $info[strtolower($matches[1])] = trim($matches[2]);
+            }
+        }
+        return $info;
+    }
+
+    /**
+     * Install a .deb file that is located in /tmp, e.g. a file that has
+     * been uploaded from the administrator's computer via the web
+     * interface upload page (pkgupload.php).
+     * @param params An array containing the following fields:
+     *   \em filename The name of the .deb file (without path).
+     *   \em force Skip the 'openmediavault' removal protection (optional).
+     * @return The name of the background process status file.
+     */
+    public function installLocalDeb($params, $context)
+    {
+        $this->validateMethodContext($context, [
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ]);
+        $this->validateMethodParams($params, "rpc.pluginmgr.installlocaldeb");
+        \OMV\System\Apt::assertNotLocked();
+        $path = $this->getLocalDebPath($params['filename']);
         $args = ["--yes", "install", escapeshellarg($path)];
         $this->assertNoOmvRemoval($args, $params['force'] ?? false);
         return $this->executeApt($args);
@@ -781,6 +871,101 @@ class PkgMgr extends \OMV\Rpc\ServiceAbstract
             }
         }
         return false;
+    }
+
+    /**
+     * Validate the name of a .deb file that is located in /tmp. The name
+     * must be a plain file name (without any path components) and must
+     * only contain safe characters.
+     * @param filename The name of the .deb file.
+     */
+    private static function validateLocalDebFilename($filename)
+    {
+        if ((1 !== preg_match("/^[A-Za-z0-9._+-]+\.deb$/", $filename)) ||
+            (false !== strpos($filename, ".."))) {
+            throw new \OMV\Exception(
+                "The file name '%s' is not a valid .deb file name.",
+                $filename
+            );
+        }
+    }
+
+    /**
+     * Get the canonical path of a .deb file located in /tmp and ensure
+     * that it is a readable regular file and a valid Debian package.
+     * @param filename The name of the .deb file (without path).
+     * @return The canonical absolute path of the .deb file.
+     */
+    private function getLocalDebPath($filename)
+    {
+        self::validateLocalDebFilename($filename);
+        $path = realpath(DIRECTORY_SEPARATOR."tmp".DIRECTORY_SEPARATOR.
+            $filename);
+        if ((false === $path) ||
+            (0 !== strpos($path, DIRECTORY_SEPARATOR."tmp".DIRECTORY_SEPARATOR))) {
+            throw new \OMV\Exception(
+                "The specified file does not exist or is not accessible."
+            );
+        }
+        if (!is_file($path) || !is_readable($path)) {
+            throw new \OMV\Exception(
+                "The specified file is not a readable regular file."
+            );
+        }
+        // Ensure the file really is a Debian package.
+        $cmd = new \OMV\System\Process("dpkg-deb", [
+            "--info", escapeshellarg($path)
+        ]);
+        $cmd->setQuiet(true);
+        $cmd->execute($output, $exitStatus);
+        if (0 !== $exitStatus) {
+            throw new \OMV\ExecException($cmd, $output, $exitStatus);
+        }
+        return $path;
+    }
+
+    /**
+     * Scan the temporary directory (/tmp) for .deb files and read their
+     * meta data. Note: every dpkg-deb call uses its own output variable
+     * because PHP's exec() (used by \OMV\System\Process::execute) appends
+     * to the array instead of clearing it.
+     * @return An array of associative arrays with the fields 'filename',
+     *   'package', 'version', 'architecture', 'size', 'mtime' and
+     *   'mtimeText'.
+     */
+    private static function scanLocalDebs()
+    {
+        $objects = [];
+        foreach (glob("/tmp/*.deb") as $path) {
+            if (!is_file($path) || !is_readable($path)) {
+                continue;
+            }
+            $object = [
+                "filename" => basename($path),
+                "package" => "",
+                "version" => "",
+                "architecture" => "",
+                "size" => filesize($path),
+                "mtime" => filemtime($path),
+                "mtimeText" => date("Y-m-d H:i", filemtime($path))
+            ];
+            $cmd = new \OMV\System\Process("dpkg-deb", [
+                "--field",
+                escapeshellarg($path),
+                "Package", "Version", "Architecture"
+            ]);
+            $cmd->setQuiet(true);
+            $cmd->execute($fieldOutput, $fieldStatus);
+            if (0 === $fieldStatus) {
+                foreach ($fieldOutput as $line) {
+                    if (1 === preg_match("/^(\S+):\s*(.*)$/", $line, $m)) {
+                        $object[strtolower($m[1])] = trim($m[2]);
+                    }
+                }
+            }
+            $objects[] = $object;
+        }
+        return $objects;
     }
 
     /**

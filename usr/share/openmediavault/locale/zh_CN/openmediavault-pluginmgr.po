@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: openmediavault-pluginmgr 8.0.2\n"
+"Project-Id-Version: openmediavault-pluginmgr 8.0.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-27 12:00+0800\n"
 "PO-Revision-Date: 2026-09-27 12:00+0800\n"
@@ -237,3 +237,15 @@ msgstr "软件包 {{ _response['package'] }}，版本 {{ _response['version'] }}
 
 msgid "Do you really want to install this local .deb package? Installing packages may break your system."
 msgstr "您确定要安装此本地 .deb 软件包吗？安装软件包可能会破坏您的系统。"
+
+msgid "Upload .deb file from your computer"
+msgstr "从电脑上传 .deb 安装包"
+
+msgid "Modified"
+msgstr "修改时间"
+
+msgid "Do you really want to install the selected .deb package? Installing packages may break your system."
+msgstr "您确定要安装所选的 .deb 软件包吗？安装软件包可能会破坏您的系统。"
+
+msgid "Upload .deb files from your computer via the upload button (opens a new browser tab), or select an existing .deb file in the /tmp directory of this system. Uploaded files are stored in /tmp and are cleaned up automatically by the system. Installing packages may break your OpenMediaVault system. Make sure you have a current backup of your configuration before continuing."
+msgstr "点击上传按钮从电脑上传 .deb 安装包（会在新浏览器标签页打开），或选择本机 /tmp 目录中已有的 .deb 文件。上传的文件保存在 /tmp，由系统自动清理。安装软件包可能会破坏您的 OpenMediaVault 系统。请确保在继续之前已备份当前配置。"

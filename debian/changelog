@@ -1,3 +1,21 @@
+openmediavault-pluginmgr (8.0.4) stable; urgency=medium
+
+  * New 'Local deb' tab: upload .deb packages from the administrator's
+    computer via the browser (pkgupload.php, same-origin OMV session
+    authentication, files are stored in /tmp) and install them, or pick
+    an existing .deb file from the /tmp directory of the system.
+  * New RPC methods getLocalDebList/getLocalDebListBg/getLocalDebInfo/
+    installLocalDeb for /tmp based package handling, including the
+    'openmediavault' removal protection.
+  * The former shared folder based installation form is still available
+    on its own 'Shared folder' tab.
+  * Uploaded files intentionally stay in /tmp and are cleaned up by the
+    regular housekeeping of the temporary directory.
+  * Fix the package details page not loading any data: the formPage route
+    was missing 'editing: true', so the GET request was never issued.
+
+ -- ${GITHUB_USER}  Wed, 30 Sep 2026 12:00:00 +0800
+
 openmediavault-pluginmgr (8.0.3) stable; urgency=medium
 
   * Fix getPkgDetails: PHP exec() appends to the output array instead of

@@ -13,4 +13,5 @@ Depends: openmediavault (>= 8.0)
 Priority: optional
 Description: openmediavault package manager plugin
  Browse, install and remove Debian packages from the OpenMediaVault
- web interface, including local .deb files stored in a shared folder.
+ web interface, including local .deb files uploaded from the browser
+ or stored in a shared folder.

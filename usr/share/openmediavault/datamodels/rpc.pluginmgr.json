@@ -62,6 +62,33 @@
 	}
 },{
 	"type": "rpc",
+	"id": "rpc.pluginmgr.installlocaldeb",
+	"params": {
+		"type": "object",
+		"properties": {
+			"filename": {
+				"type": "string",
+				"required": true
+			},
+			"force": {
+				"type": "boolean"
+			}
+		}
+	}
+},{
+	"type": "rpc",
+	"id": "rpc.pluginmgr.localdebinfo",
+	"params": {
+		"type": "object",
+		"properties": {
+			"filename": {
+				"type": "string",
+				"required": true
+			}
+		}
+	}
+},{
+	"type": "rpc",
 	"id": "rpc.pluginmgr.simulate",
 	"params": {
 		"type": "object",
