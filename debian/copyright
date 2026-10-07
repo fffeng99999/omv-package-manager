@@ -3,7 +3,7 @@ Upstream-Name: openmediavault-pluginmgr
 Source: https://github.com/${GITHUB_USER}/omv-package-manager
 
 Files: *
-Copyright: 2026 ${GITHUB_USER}
+Copyright: 2026 ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>
 License: GPL-3+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
